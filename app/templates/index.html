@@ -1,0 +1,46 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+	<br>
+
+	<center>
+	<form  id="textform" method="post">
+		<div>
+			<table>
+			<tr>
+				<th width = "20%" align = "left">Compañia</th>
+				<th width = "20%" align = "center">ID de vagon</th>
+				<th width = "20%" align = "right">Carga</th>
+			</tr>
+			</table>
+		</div>
+		<div>
+			<table>
+			{% for i in range(50) %}
+			<tr >
+				<div align = "center">
+					<input type = "text" name = "company_{{i}}" placeholder = "" style = "background-color:{{errors[i][0]}}" value = {{values[i][0]}}>
+					<input type = "text" name = "id_{{i}}" placeholder = "" style ="background-color:{{errors[i][1]}}" value = {{values[i][1]}}>
+					<input type = "text" name = "load_{{i}}" placeholder = "" style = "background-color:{{errors[i][2]}};" value = {{values[i][2]}}>
+				</div>
+			</tr>
+			{% endfor %}
+			</table>
+		</div>
+	    <br>
+	    <input type="text" name="location_id" placeholder="ID de ubicacion">
+	    <input type="submit" formaction = "/submit"  name = "action"  value="Submit">
+	    <input type="submit" formaction = "/analize"value = "Analizar">
+	</form>
+	</center>
+
+	<br>
+
+	<a href="{{node_address}}/mine" target="_blank"><button>Request to mine</button></a>
+	<a href="/"><button>Resync</button></a>
+
+	<div style="margin: 20px;">
+
+    </div>
+{% endblock %}

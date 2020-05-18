@@ -1,0 +1,6 @@
+Trazabilidad de la carga desde origen hasta llegada a los puertos
+Ideas:
+- Pagina para loguear nuevo bloque (Numero de vagones en orden + carga (?))
+- OCR carta de porte
+- OCR de vagones
+
