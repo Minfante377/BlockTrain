@@ -17,7 +17,7 @@
 		</div>
 		<div>
 			<table>
-			{% for i in range(50) %}
+			{% for i in range(MAX_LOADS) %}
 			<tr >
 				<div align = "center">
 					<input type = "text" name = "company_{{i}}" placeholder = "" style = "background-color:{{errors[i][0]}}" value = {{values[i][0]}}>

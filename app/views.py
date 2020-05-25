@@ -9,7 +9,7 @@ from app import app
 # The node with which our application interacts, there can be multiple
 # such nodes as well.
 CONNECTED_NODE_ADDRESS = "http://127.0.0.1:8000"
-
+MAX_LOADS = 50
 errors = None
 values = None
 
@@ -44,14 +44,14 @@ def index():
     if not errors:
         errors = []
         values = []
-        for i in range(50):
+        for i in range(MAX_LOADS):
             errors.append(error)
             values.append(value)
     return render_template('index.html',
                            title='BlockTrain: Seguimiento descentralizado de cargas',
                            posts=posts,
                            node_address=CONNECTED_NODE_ADDRESS,
-                           readable_time=timestamp_to_string, errors = errors, values = values)
+                           readable_time=timestamp_to_string, errors = errors, values = values, MAX_LOADS = MAX_LOADS)
 
 @app.route('/analize', methods=['POST'])
 def analize():
@@ -60,7 +60,7 @@ def analize():
     companies = []
     ids = []
     loads = []
-    for i in range (50):
+    for i in range (MAX_LOADS):
         companies.append(request.form['company_'+str(i)])
         ids.append(request.form['id_'+str(i)])
         loads.append(request.form['load_'+str(i)])
@@ -77,7 +77,7 @@ def analize():
     previous_loads = tx[2]
     i = 0
     error = []
-    while i < 50:
+    while i < MAX_LOADS:
         if not companies[i] == '': 
             value = [companies[i], ids[i], loads[i]]
             if not companies[i] == previous_companies[i]:
@@ -89,6 +89,7 @@ def analize():
             else:
                 error.append("#3AF703")
             if not loads[i] == previous_loads[i]:
+                print("%s vs %s" %(loads[i], previous_loads[i]))
                 error.append("#F72E03")
             else:
                 error.append("#3AF703")
@@ -97,7 +98,10 @@ def analize():
             value = ['','','']
         errors.append(error)
         values.append(value)
+        error = []
+        value = []
         i = i+1
+    print(errors)
     return redirect("/")
         
 
