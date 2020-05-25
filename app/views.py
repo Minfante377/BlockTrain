@@ -69,9 +69,8 @@ def analize():
     errors = []
     values = []
     response = requests.get(endpoint)
-    block = json.loads(response.content)['block']
-    print(block)
-    tx = block['transactions'][0]['content']
+    block_chain = json.loads(response.content)['block']
+    tx = block_chain['transactions'][-1]['content']
     previous_companies = tx[0]
     previous_ids = tx[1]
     previous_loads = tx[2]
@@ -81,6 +80,7 @@ def analize():
         if not previous_companies[i] == '': 
             value = [companies[i], ids[i], loads[i]]
             if not companies[i] == previous_companies[i]:
+                print("%s vs %s" %(companies[i], previous_companies[i]))
                 error.append("#F72E03")
             else:
                 error.append("#3AF703")
