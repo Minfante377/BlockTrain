@@ -78,7 +78,7 @@ def analize():
     i = 0
     error = []
     while i < MAX_LOADS:
-        if not companies[i] == '': 
+        if not previous_companies[i] == '': 
             value = [companies[i], ids[i], loads[i]]
             if not companies[i] == previous_companies[i]:
                 error.append("#F72E03")
