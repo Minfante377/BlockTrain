@@ -29,9 +29,10 @@
 			</table>
 		</div>
 	    <br>
-	    <input type="text" name="location_id" placeholder="ID de ruta" required>
-	    <input type="submit" formaction = "/submit"  name = "action"  value="Submit">
-	    <input type="submit" formaction = "/analize"value = "Analizar">
+	    <input type="text" name="order_id" placeholder="ID de ruta" style = "background-color:{{error_id}}" required>
+	    <input type="submit" formaction = "/submit"  name = "action"  value="Enviar">
+	    <input type="submit" formaction = "/analize" value = "Analizar">
+	    <input type="submit" formaction = "/new_chain" value = "Crear nueva orden">
 	</form>
 	</center>
 

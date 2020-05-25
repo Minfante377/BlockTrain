@@ -138,12 +138,24 @@ class Blockchain:
 app = Flask(__name__)
 
 # the node's copy of blockchain
-blockchain = Blockchain()
-blockchain.create_genesis_block()
+
+blockchains = {}
 
 # the address to other participating members of the network
 peers = set()
 
+@app.route('/new_chain', methods = ['POST'])
+def new_chain():
+    global blockchains
+    _id = request.get_json()['ID']
+    blockchains[_id] = Blockchain()
+    blockchains[_id].create_genesis_block()
+    return "Success", 201
+
+@app.route('/check_id', methods = ['POST'])
+def check_id():
+    _id = requeset.get_json()['ID']
+    return (_id in blockchains)
 
 # endpoint to submit a new transaction. This will be used by
 # our application to add new data (posts) to the blockchain
@@ -157,8 +169,8 @@ def new_transaction():
             return "Invalid transaction data", 404
 
     tx_data["timestamp"] = time.time()
-
-    blockchain.add_new_transaction(tx_data)
+    _id = request.get_json()['ID']
+    blockchains[_id].add_new_transaction(tx_data)
 
     return "Success", 201
 
@@ -168,8 +180,9 @@ def new_transaction():
 # all the posts to display.
 @app.route('/chain', methods=['GET'])
 def get_chain():
+    _id = request.get_json()['ID']
     chain_data = []
-    for block in blockchain.chain:
+    for block in blockchains[_id].chain:
         chain_data.append(block.__dict__)
     return json.dumps({"length": len(chain_data),
                        "chain": chain_data,
@@ -177,7 +190,8 @@ def get_chain():
 #endpoint to return the last block of the chain
 @app.route('/get_last_block', methods = ['GET'])
 def get_last_block():
-    chain_data = blockchain.chain[-1].__dict__
+    _id = request.get_json()['ID']
+    chain_data = blockchains[_id].chain[-1].__dict__
     if not chain_data:
         return "No existe bloque genesis"
     return json.dumps({'block': chain_data})
@@ -187,17 +201,18 @@ def get_last_block():
 # a command to mine from our application itself.
 @app.route('/mine', methods=['GET'])
 def mine_unconfirmed_transactions():
-    result = blockchain.mine()
+    _id = request.get_json()['ID']
+    result = blockchains[_id].mine()
     if not result:
         return "No transactions to mine"
     else:
         # Making sure we have the longest chain before announcing to the network
-        chain_length = len(blockchain.chain)
+        chain_length = len(blockchains[_id].chain)
         consensus()
-        if chain_length == len(blockchain.chain):
+        if chain_length == len(blockchains[_id].chain):
             # announce the recently mined block to the network
-            announce_new_block(blockchain.last_block)
-        return "Block #{} is mined.".format(blockchain.last_block.index)
+            announce_new_block(blockchains[_id].last_block)
+        return "Block #{} is mined.".format(blockchains[_id].last_block.index)
 
 
 # endpoint to add new peers to the network.
@@ -234,11 +249,12 @@ def register_with_existing_node():
                              data=json.dumps(data), headers=headers)
 
     if response.status_code == 200:
-        global blockchain
+        global blockchains
         global peers
+        _id = request.get_json()['ID']
         # update chain and the peers
         chain_dump = response.json()['chain']
-        blockchain = create_chain_from_dump(chain_dump)
+        blockchains[_id] = create_chain_from_dump(chain_dump)
         peers.update(response.json()['peers'])
         return "Registration successful", 200
     else:
@@ -269,6 +285,7 @@ def create_chain_from_dump(chain_dump):
 # and then added to the chain.
 @app.route('/add_block', methods=['POST'])
 def verify_and_add_block():
+    _id = request.get_json()['ID']
     block_data = request.get_json()
     block = Block(block_data["index"],
                   block_data["transactions"],
@@ -277,8 +294,7 @@ def verify_and_add_block():
                   block_data["nonce"])
 
     proof = block_data['hash']
-    added = blockchain.add_block(block, proof)
-
+    added = blockchains[_id].add_block(block, proof)
     if not added:
         return "The block was discarded by the node", 400
 
@@ -288,7 +304,9 @@ def verify_and_add_block():
 # endpoint to query unconfirmed transactions
 @app.route('/pending_tx')
 def get_pending_tx():
-    return json.dumps(blockchain.unconfirmed_transactions)
+
+    _id = request.get_json()['ID']
+    return json.dumps(blockchains[_id].unconfirmed_transactions)
 
 
 def consensus():
@@ -296,21 +314,22 @@ def consensus():
     Our naive consnsus algorithm. If a longer valid chain is
     found, our chain is replaced with it.
     """
-    global blockchain
+    global blockchains
 
+    _id = request.get_json()['ID']
     longest_chain = None
-    current_len = len(blockchain.chain)
+    current_len = len(blockchains[_id].chain)
 
     for node in peers:
         response = requests.get('{}chain'.format(node))
         length = response.json()['length']
         chain = response.json()['chain']
-        if length > current_len and blockchain.check_chain_validity(chain):
+        if length > current_len and blockchains[_id].check_chain_validity(chain):
             current_len = length
             longest_chain = chain
 
     if longest_chain:
-        blockchain = longest_chain
+        blockchains[_id] = longest_chain
         return True
 
     return False
