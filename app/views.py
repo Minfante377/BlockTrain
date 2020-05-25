@@ -133,6 +133,9 @@ def submit_textarea():
     requests.post(new_tx_address,
                   json=post_object,
                   headers={'Content-type': 'application/json'})
+    #Mine new transaction
+    mine_address = "{}/mine".format(CONNECTED_NODE_ADDRESS)
+    requests.get(mine_address)
     errors = None
     return redirect('/')
 
